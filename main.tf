@@ -12,6 +12,7 @@ resource "aws_subnet" "pvt_subnet_1" {
   availability_zone = "ap-south-1a"
 }
 
+// we use data to retrieve information of existing resources
 data "aws_vpc" "default_vpc" {
   default = true
   #   cidr_block = aws_vpc.dev_vpc.cidr_block
@@ -24,4 +25,8 @@ resource "aws_subnet" "pub_subnet_1" {
   vpc_id            = data.aws_vpc.default_vpc.id
   cidr_block        = "172.31.48.0/20"
   availability_zone = "ap-south-1b"
+}
+
+output "dev_vpc_id" {
+  value = aws_vpc.dev_vpc.id
 }
