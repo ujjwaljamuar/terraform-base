@@ -7,6 +7,7 @@ variable "vpc_cidr_block" {}
 variable "subnet_cidr_block" {}
 variable "avl_zone" {}
 variable "env" {}
+variable "my_ip_addr" {}
 
 resource "aws_vpc" "myapp_vpc" {
   cidr_block = var.vpc_cidr_block
@@ -63,4 +64,37 @@ resource "aws_route_table" "myapp_route_table" {
 resource "aws_route_table_association" "myapp_rtb_assc" {
   subnet_id      = aws_subnet.myapp_subnet_1.id
   route_table_id = aws_route_table.myapp_route_table.id
+}
+
+resource "aws_security_group" "myapp_sg" {
+  name   = "myapp-sg"
+  vpc_id = aws_vpc.myapp_vpc.id
+
+  ingress {
+    # for ssh
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.my_ip_addr]
+  }
+
+  ingress {
+    # for nginx
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+    prefix_list_ids = []
+  }
+
+  tags = {
+    Name : "${var.env}-myapp-sg"
+  }
 }
