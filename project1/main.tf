@@ -8,6 +8,8 @@ variable "subnet_cidr_block" {}
 variable "avl_zone" {}
 variable "env" {}
 variable "my_ip_addr" {}
+variable "instance_type" {}
+variable "pub_key_location" {}
 
 resource "aws_vpc" "myapp_vpc" {
   cidr_block = var.vpc_cidr_block
@@ -96,5 +98,46 @@ resource "aws_security_group" "myapp_sg" {
 
   tags = {
     Name : "${var.env}-myapp-sg"
+  }
+}
+
+data "aws_ami" "latest_amazon_linux_image" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-kernel-*-x86_64-gp2"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+/*
+output "aws_ami" {
+  value = data.aws_ami.latest_amazon_linux_image
+}
+*/
+
+resource "aws_key_pair" "myapp_kp" {
+  key_name   = "myapp-kp"
+  public_key = file(var.pub_key_location)
+}
+
+resource "aws_instance" "myapp_ec2" {
+  ami           = data.aws_ami.latest_amazon_linux_image.id
+  instance_type = var.instance_type
+
+  subnet_id              = aws_subnet.myapp_subnet_1.id
+  vpc_security_group_ids = [aws_security_group.myapp_sg.id]
+  availability_zone      = var.avl_zone
+
+  associate_public_ip_address = true
+  key_name                    = aws_key_pair.myapp_kp.key_name
+
+  tags = {
+    Name : "${var.env}-myapp-ec2"
   }
 }
