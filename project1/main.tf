@@ -140,6 +140,14 @@ resource "aws_instance" "myapp_ec2" {
   tags = {
     Name : "${var.env}-myapp-ec2"
   }
+
+  user_data = <<EOF
+                  #!/bin/bash
+                  sudo yum update -y && sudo yum install docker -y
+                  sudo systemctl start docker
+                  sudo usermod -aG docker ec2-user  
+                  docker run -p 8080:80 nginx                
+              EOF
 }
 
 output "ec2_public_ip" {
