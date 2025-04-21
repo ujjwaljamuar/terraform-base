@@ -143,7 +143,7 @@ resource "aws_instance" "myapp_ec2" {
   }
 
   user_data = file("scripts/entry-script.sh")
-  
+
   /*
   # using provisioner
   connection {
