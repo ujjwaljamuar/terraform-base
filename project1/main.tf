@@ -10,6 +10,7 @@ variable "env" {}
 variable "my_ip_addr" {}
 variable "instance_type" {}
 variable "pub_key_location" {}
+variable "pvt_key_location" {}
 
 resource "aws_vpc" "myapp_vpc" {
   cidr_block = var.vpc_cidr_block
@@ -142,6 +143,34 @@ resource "aws_instance" "myapp_ec2" {
   }
 
   user_data = file("scripts/entry-script.sh")
+  
+  /*
+  # using provisioner
+  connection {
+    type        = "ssh"
+    host        = self.public_ip
+    user        = "ec2-user"
+    private_key = file(var.pvt_key_location)
+  }
+
+  provisioner "file" {
+    source      = "scripts/entry-script.sh"
+    destination = "/home/ec2-user/entry-script.sh"
+  }
+
+  provisioner "remote-exec" {
+    # script = file("scripts/entry-script.sh")
+
+    inline = [ 
+      "chmod +x /home/ec2-user/entry-script.sh",
+      "/home/ec2-user/entry-script.sh"
+     ]
+  }
+  */
+
+  provisioner "local-exec" {
+    command = "echo http://${self.public_ip} > output.txt"
+  }
 }
 
 output "ec2_public_ip" {
