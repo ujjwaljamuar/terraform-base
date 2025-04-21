@@ -22,4 +22,22 @@ module "eksapp-vpc" {
   public_subnets  = var.eksapp_public_subnets_cidr_block
 
   azs = data.aws_availability_zones.eks-app-azs.names
+
+  enable_nat_gateway   = true
+  single_nat_gateway   = true
+  enable_dns_hostnames = true
+
+  tags = {
+    "kubernetes.io/cluster/eksapp-cluster" = "shared"
+  }
+
+  public_subnet_tags = {
+    "kubernetes.io/cluster/eksapp-cluster" = "shared"
+    "kubernetes.io/role/elb "              = 1
+  }
+
+  private_subnet_tags = {
+    "kubernetes.io/cluster/eksapp-cluster" = "shared"
+    "kubernetes.io/role/internal-elb"      = 1
+  }
 }
